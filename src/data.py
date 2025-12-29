@@ -90,7 +90,7 @@ def download_ohlcv_stooq(tickers: list[str], start="2018-01-01", sleep=0.2) -> p
             frames[tk] = df
         except Exception as e:
             failed.append((tk, f"{type(e).__name__}: {e}"))
-            print(...)
+            print(f"  skip {tk}: {type(e).__name__}: {e}")
 
         time.sleep(sleep)
 
