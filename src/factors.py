@@ -11,14 +11,14 @@ def calc_factors(price_df: pd.DataFrame) -> pd.DataFrame:
     close = _get_close(price_df)
 
     # 日收益
-    ret = close.pct_change()
+    ret = close.pct_change(fill_method=None)
 
     # 近3个月≈63交易日，近12个月≈252交易日
     m3 = 63
     y1 = 252
 
-    mom_3m = close.pct_change(m3)
-    mom_12m = close.pct_change(y1)
+    mom_3m = close.pct_change(m3, fill_method=None)
+    mom_12m = close.pct_change(y1, fill_method=None)
 
     vol_3m = ret.rolling(m3).std() * np.sqrt(252)  # 年化波动
     # 最大回撤：用滚动窗口的高点计算

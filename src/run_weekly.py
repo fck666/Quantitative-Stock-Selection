@@ -18,7 +18,7 @@ def main():
     cache_name = "sp500_ohlcv"
     cache_path = RAW_DIR / "sp500_ohlcv.parquet"
     if cache_path.exists():
-        log.info("loading cached data:", cache_path)
+        log.info(f"loading cached data: {cache_path}")
         px = load_parquet(cache_name)
     else:
         # px = download_ohlcv(tickers, start="2018-01-01", batch_size=50, retries=3)
