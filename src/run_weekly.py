@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from pathlib import Path
 from src.universe import get_sp500_tickers
 from src.data import download_ohlcv, save_parquet, load_parquet, download_ohlcv_stooq
@@ -17,10 +18,17 @@ def main():
     # 如果本地已经有缓存，优先用缓存（更快更稳）
     cache_name = "sp500_ohlcv"
     cache_path = RAW_DIR / "sp500_ohlcv.parquet"
+    px = None
     if cache_path.exists():
-        log.info(f"loading cached data: {cache_path}")
-        px = load_parquet(cache_name)
-    else:
+        modified_time = datetime.fromtimestamp(cache_path.stat().st_mtime)
+        if datetime.now() - modified_time > timedelta(hours=24):
+            log.info(f"cached data too old, removing: {cache_path}")
+            cache_path.unlink()
+        else:
+            log.info(f"loading cached data: {cache_path}")
+            px = load_parquet(cache_name)
+
+    if px is None:
         # px = download_ohlcv(tickers, start="2018-01-01", batch_size=50, retries=3)
         px = download_ohlcv_stooq(tickers, start="2018-01-01", sleep=0.2)
         save_parquet(px, cache_name)
