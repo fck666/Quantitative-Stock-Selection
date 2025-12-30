@@ -16,7 +16,8 @@ def rank_stocks(factors: pd.DataFrame) -> pd.DataFrame:
     df["score"] = (
         0.35 * z_mom3 +
         0.45 * z_mom12 -
-        0.10 * z_vol -
+        0.10 * z_vol +
+        # 回撤越小（越接近0）越好，这里应当加分
         0.10 * z_dd
     )
 
