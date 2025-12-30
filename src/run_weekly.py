@@ -40,5 +40,9 @@ def main():
     top20.to_csv(OUTPUT_DIR / "top20.csv")
     log.info("saved: output/top20.csv")
 
+    bottom20 = ranked.sort_values("score", ascending=True).head(20).copy()
+    bottom20.to_csv(OUTPUT_DIR / "bottom20.csv")
+    log.info("saved: output/bottom20.csv")
+
 if __name__ == "__main__":
     main()
