@@ -1,0 +1,4 @@
+2025-12-30 09:09:42,720 | INFO | log file: /Users/kkkfcc/Desktop/us_stock_selector/src/logs/run_20251230_090942.log
+2025-12-30 09:09:43,148 | INFO | tickers: 501
+2025-12-30 09:09:43,148 | INFO | loading cached data: /Users/kkkfcc/Desktop/us_stock_selector/data/raw/sp500_ohlcv.parquet
+2025-12-30 09:09:43,308 | INFO | saved: output/top20.csv
