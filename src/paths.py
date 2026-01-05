@@ -7,5 +7,8 @@ DATA_DIR = PROJECT_ROOT / "data"
 RAW_DIR = DATA_DIR / "raw"
 OUTPUT_DIR = PROJECT_ROOT / "output"
 
+DEFAULT_TICKER_START = "2018-01-01"
+SINGLE_TICKER_CACHE_TTL_HOURS = 6
+
 RAW_DIR.mkdir(parents=True, exist_ok=True)
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)

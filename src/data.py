@@ -9,6 +9,43 @@ import requests
 from src.paths import RAW_DIR
 RAW_DIR.mkdir(parents=True, exist_ok=True)
 
+def fetch_single_ticker(ticker: str, start: str = "2018-01-01", retries: int = 5) -> pd.DataFrame:
+    """
+    下载单个标的的日线数据，复用 download_ohlcv 的限速/重试思路。
+    返回包含标准 OHLCV 列的 DataFrame，索引为日期。
+    """
+    last_err = None
+    for r in range(retries):
+        try:
+            df = yf.download(
+                tickers=[ticker],
+                start=start,
+                auto_adjust=True,
+                group_by="column",
+                threads=False,      # 关键：关并发，减少触发限速
+                progress=False,
+            )
+            if df is None or df.empty:
+                raise RuntimeError("empty dataframe")
+
+            # yfinance 单票返回的列有时是多级，需要压平到标准 OHLCV
+            if isinstance(df.columns, pd.MultiIndex):
+                if ticker in df.columns.get_level_values(-1):
+                    df = df.xs(ticker, axis=1, level=-1, drop_level=True)
+                elif ticker in df.columns.get_level_values(0):
+                    df = df.xs(ticker, axis=1, level=0, drop_level=True)
+
+            df = df.sort_index()
+            return df
+        except Exception as e:
+            last_err = e
+            wait = min(60, 5 * (2 ** r))  # 5,10,20,40,60
+            print(f"retry {r+1}/{retries} after {wait}s because: {type(e).__name__}: {e}")
+            time.sleep(wait)
+
+    raise RuntimeError(f"failed to fetch {ticker}: {last_err}")
+
+
 def download_ohlcv(tickers: list[str], start="2018-01-01", batch_size=10, retries=5) -> pd.DataFrame:
     all_parts: list[pd.DataFrame] = []
 
