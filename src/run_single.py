@@ -8,7 +8,12 @@ from src.paths import DEFAULT_TICKER_START
 
 def main():
     parser = argparse.ArgumentParser(description="Fetch and analyze a single ticker.")
-    parser.add_argument("symbol", help="Ticker symbol, e.g. AAPL")
+    parser.add_argument(
+        "symbol",
+        nargs="?",
+        default="AAPL",
+        help="Ticker symbol, e.g. AAPL (default: AAPL)",
+    )
     parser.add_argument(
         "--start",
         default=DEFAULT_TICKER_START,
