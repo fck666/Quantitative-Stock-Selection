@@ -9,11 +9,26 @@ import requests
 from src.paths import RAW_DIR
 RAW_DIR.mkdir(parents=True, exist_ok=True)
 
-def fetch_single_ticker(ticker: str, start: str = "2018-01-01", retries: int = 5) -> pd.DataFrame:
+def fetch_single_ticker(
+    ticker: str,
+    start: str = "2018-01-01",
+    retries: int = 5,
+    source: str = "stooq",
+) -> pd.DataFrame:
     """
-    下载单个标的的日线数据，复用 download_ohlcv 的限速/重试思路。
+    下载单个标的的日线数据。
+    默认从 Stooq 拉取；需要时可切换到 Yahoo Finance。
     返回包含标准 OHLCV 列的 DataFrame，索引为日期。
     """
+    source = source.lower()
+    if source == "stooq":
+        return _fetch_single_ticker_stooq(ticker, start=start, retries=retries)
+    if source == "yahoo":
+        return _fetch_single_ticker_yahoo(ticker, start=start, retries=retries)
+    raise ValueError(f"unsupported source: {source}")
+
+
+def _fetch_single_ticker_yahoo(ticker: str, start: str, retries: int) -> pd.DataFrame:
     last_err = None
     for r in range(retries):
         try:
@@ -43,7 +58,39 @@ def fetch_single_ticker(ticker: str, start: str = "2018-01-01", retries: int = 5
             print(f"retry {r+1}/{retries} after {wait}s because: {type(e).__name__}: {e}")
             time.sleep(wait)
 
-    raise RuntimeError(f"failed to fetch {ticker}: {last_err}")
+    raise RuntimeError(f"failed to fetch {ticker} from yahoo: {last_err}")
+
+
+def _fetch_single_ticker_stooq(ticker: str, start: str, retries: int) -> pd.DataFrame:
+    start_dt = pd.to_datetime(start)
+    last_err = None
+
+    for r in range(retries):
+        try:
+            url = f"https://stooq.com/q/d/l/?s={ticker.lower()}.us&i=d"
+            resp = requests.get(url, timeout=30)
+            resp.raise_for_status()
+
+            df = pd.read_csv(StringIO(resp.text))
+            if df.empty or "Date" not in df.columns:
+                raise RuntimeError("empty/invalid csv")
+
+            df["Date"] = pd.to_datetime(df["Date"])
+            df = df[df["Date"] >= start_dt].set_index("Date").sort_index()
+
+            if df.empty:
+                raise RuntimeError("no data after start date")
+            if "Close" not in df.columns or df["Close"].dropna().empty:
+                raise RuntimeError("no close data")
+
+            return df
+        except Exception as e:
+            last_err = e
+            wait = min(60, 5 * (2 ** r))  # 5,10,20,40,60
+            print(f"retry {r+1}/{retries} after {wait}s because: {type(e).__name__}: {e}")
+            time.sleep(wait)
+
+    raise RuntimeError(f"failed to fetch {ticker} from stooq: {last_err}")
 
 
 def download_ohlcv(tickers: list[str], start="2018-01-01", batch_size=10, retries=5) -> pd.DataFrame:
