@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quantitative Stock Selection - 分析前端</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">前后端分离示例</p>
+      <h1>单票时序分析面板</h1>
+      <p class="lede">输入股票代码，查看最近 180 个交易日的收盘价、均线、成交量，以及分析统计。默认 API 基址指向 <code>/ticker/{symbol}</code>。</p>
+    </div>
+    <div class="tag">前端预览</div>
+  </header>
+
+  <main class="layout">
+    <section class="card">
+      <h2>查询设置</h2>
+      <form id="queryForm" class="form-grid">
+        <label>
+          股票代码
+          <input id="symbol" name="symbol" type="text" placeholder="例如：AAPL" required>
+        </label>
+        <label>
+          起始日期（可选）
+          <input id="start" name="start" type="date">
+        </label>
+        <label>
+          API 基址
+          <input id="apiBase" name="apiBase" type="text" spellcheck="false" required>
+        </label>
+        <label class="checkbox">
+          <input id="forceRefresh" name="forceRefresh" type="checkbox">
+          强制刷新（忽略缓存）
+        </label>
+        <div class="form-actions">
+          <button type="submit">获取分析</button>
+          <button id="resetZoom" type="button" class="ghost">重置图表缩放</button>
+        </div>
+      </form>
+      <p id="status" class="status muted">等待查询…</p>
+      <p id="cacheInfo" class="status cache">缓存状态未加载。</p>
+    </section>
+
+    <section class="card" id="analysisCard">
+      <div class="card-header">
+        <h2>分析概要</h2>
+        <p id="latestInfo" class="muted">—</p>
+      </div>
+      <div class="stats-grid" id="statsGrid">
+        <div class="stat"><p class="label">1M 收益</p><p class="value">—</p></div>
+        <div class="stat"><p class="label">3M 收益</p><p class="value">—</p></div>
+        <div class="stat"><p class="label">1Y 收益</p><p class="value">—</p></div>
+        <div class="stat"><p class="label">年化波动</p><p class="value">—</p></div>
+        <div class="stat"><p class="label">最大回撤</p><p class="value">—</p></div>
+        <div class="stat"><p class="label">MA5</p><p class="value">—</p></div>
+        <div class="stat"><p class="label">MA20</p><p class="value">—</p></div>
+        <div class="stat"><p class="label">MA60</p><p class="value">—</p></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header">
+        <h2>价格与成交量</h2>
+        <p class="muted">支持滚轮缩放、拖拽平移，点击下方按钮可重置。</p>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="priceChart" aria-label="价格与均线图表"></canvas>
+        <p id="chartPlaceholder" class="muted text-center">尚未加载数据。</p>
+      </div>
+      <p id="errorMsg" class="status error" hidden></p>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>使用 Chart.js + Zoom 插件实现日期区间缩放，支持缓存提示、错误提示与无数据提示。</p>
+  </footer>
+
+  <script type="module" src="./main.js"></script>
+</body>
+</html>
