@@ -14,10 +14,16 @@ def main():
         default=DEFAULT_TICKER_START,
         help=f"Start date for history (default: {DEFAULT_TICKER_START})",
     )
+    parser.add_argument(
+        "--source",
+        default="stooq",
+        choices=["stooq", "yahoo"],
+        help="Data source (default: stooq; set yahoo to use Yahoo Finance).",
+    )
     args = parser.parse_args()
 
     ticker = args.symbol.upper()
-    df = fetch_single_ticker(ticker, start=args.start)
+    df = fetch_single_ticker(ticker, start=args.start, source=args.source)
     result = analyze_timeseries(df, ticker)
 
     print(json.dumps(result, indent=2, ensure_ascii=False, default=str))
